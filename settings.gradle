@@ -10,6 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            // url da api do arcGis
+            url 'https://esri.jfrog.io/artifactory/arcgis'
+        }
     }
 }
 rootProject.name = "TCC_SIG"
