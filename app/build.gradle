@@ -3,6 +3,10 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
+def envPropertiesFile = rootProject.file("app/env.properties")
+def envProperties = new Properties()
+envProperties.load(new FileInputStream(envPropertiesFile))
+
 android {
     namespace 'com.darloonlino.tcc_sig'
     compileSdk 32
@@ -21,6 +25,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "ARCGIS_API_KEY", "\"${envProperties['arcGisApiKey']}\""
+        }
+
+        debug {
+            buildConfigField "String", "ARCGIS_API_KEY", "\"${envProperties['arcGisApiKey']}\""
         }
     }
     compileOptions {
