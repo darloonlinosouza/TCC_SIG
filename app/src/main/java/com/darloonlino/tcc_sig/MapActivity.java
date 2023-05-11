@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -52,12 +53,36 @@ public class MapActivity extends AppCompatActivity {
     private LocationDisplay locationDisplay;
     private FeatureLayer shapeFeatureLayer;
     private Callout mapCallout;
+    private ServiceFeatureTable shapefileRegion;
 
     int PERMISSION_ID = 2;
     String[] REQUEST_PERMISSIONS = new String[]{
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
+
+    String URL = "https://services1.arcgis.com/N3Vx53K5yCP624mB/arcgis/rest/services/layersmg/FeatureServer/";
+
+    public enum RiversMG {
+        SAO_FRANC_ALTO(0),
+        DOCE(1),
+        GRANDE(2),
+        JEQUITINHONHA(3),
+        LESTE(4),
+        SAO_FRANC_MEDIO(5),
+        PARAIBA_DO_SUL(6),
+        PARANAIBA(7),
+        PARDO(8),
+        PIRACICABAJAGUARI(9);
+
+        private final int index;
+        RiversMG(int index){
+            this.index = index;
+        }
+        public int getValue(){
+            return this.index;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,12 +138,12 @@ public class MapActivity extends AppCompatActivity {
 
     // cria um mapa do tipo TOPOGRAPHIC e adiciona por cima o shapeFile
     private void setupMapHydrology() {
-        ArcGISMap map = new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC);
+        ArcGISMap map = new ArcGISMap(BasemapStyle.ARCGIS_COMMUNITY);
         ArcGISRuntimeEnvironment.setApiKey(BuildConfig.ARCGIS_API_KEY);
         this.mapView.setMap(map);
-        this.mapView.setViewpoint((new Viewpoint(-20.0, -41.0, 2500000.0)));
+        this.mapView.setViewpoint((new Viewpoint( -19.26, -45.45, 12000000.0)));
 
-        ServiceFeatureTable shapefileFeatureTable = new ServiceFeatureTable("https://services3.arcgis.com/U26uBjSD32d7xvm2/arcgis/rest/services/rio_doce/FeatureServer/0");
+        ServiceFeatureTable shapefileFeatureTable = new ServiceFeatureTable(URL + "10");
         this.shapeFeatureLayer = new FeatureLayer(shapefileFeatureTable);
 
         this.mapView.getMap().getOperationalLayers().add(this.shapeFeatureLayer);
@@ -142,36 +167,24 @@ public class MapActivity extends AppCompatActivity {
                     final ListenableFuture<IdentifyLayerResult> identifyLayerResultListenableFuture;
                     identifyLayerResultListenableFuture = mapView.identifyLayerAsync(shapeFeatureLayer, screenPoint, tolerance, false, 1);
 
-                    // busca e manipula os dados da tabela correspondentes ao rio clicado
+                    // busca o nome da área de Minas clicado
                     identifyLayerResultListenableFuture.addDoneListener(() -> {
                         try {
                             IdentifyLayerResult identiyfLayerResult = identifyLayerResultListenableFuture.get();
+                            Feature feature = (Feature) identiyfLayerResult.getElements().get(0);
+                            Map<String, Object> attr = feature.getAttributes();
+                            String name = (String) attr.get("Nome");
 
-                            // balão com os valores
-                            TextView calloutContent = new TextView(getApplicationContext());
-                            calloutContent.setTextColor(Color.BLACK);
-                            calloutContent.setSingleLine(false);
-                            calloutContent.setVerticalScrollBarEnabled(true);
-                            calloutContent.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
-                            calloutContent.setMovementMethod(new ScrollingMovementMethod());
+                            // compara o nome da area com o enum de indices da url
+                            for (RiversMG riversEnum : RiversMG.values()) {
+                                String nameRiverFormated = name.replaceAll("/ /g", "_");
 
-                            // para cada element (coluna da tabela)
-                            for (GeoElement element : identiyfLayerResult.getElements()) {
-                                Feature feature = (Feature) element;
-                                Map<String, Object> attr = feature.getAttributes();
-                                Set<String> keys = attr.keySet();
-
-                                for (String key : keys) {
-                                    Object value = attr.get(key);
-                                    calloutContent.append(key + " | " + value + "\n");
+                                // quando encontrado o nome no enum, navega para a outra tela com a url do shapefile de rios dessa região
+                                if(riversEnum.name().equals(nameRiverFormated)) {
+                                    Intent regionIntent = new Intent(MapActivity.this, RegionActivity.class);
+                                    regionIntent.putExtra("url",URL + riversEnum.getValue());
+                                    startActivity(regionIntent);
                                 }
-
-                                Envelope envelope = feature.getGeometry().getExtent();
-                                mapView.setViewpointGeometryAsync(envelope, 200);
-
-                                mapCallout.setLocation(envelope.getCenter());
-                                mapCallout.setContent(calloutContent);
-                                mapCallout.show();
                             }
                         } catch (Exception el) {
                             Log.e(getResources().getString(R.string.app_name), "Select feature failed: " + el.getMessage());
@@ -184,6 +197,8 @@ public class MapActivity extends AppCompatActivity {
             }
         });
     }
+
+    /** Não utilizados */
 
     private  void setupLocationDisplay() {
         locationDisplay = mapView.getLocationDisplay();
