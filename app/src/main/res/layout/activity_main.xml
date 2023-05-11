@@ -5,7 +5,7 @@
     android:id="@+id/bottaoAcessar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="#F5F5F5"
+    android:backgroundTint="?colorOnSecondary"
     android:backgroundTintMode="add"
     tools:context=".MainActivity">
 
@@ -17,7 +17,7 @@
         android:lineSpacingExtra="8sp"
         android:text="Olá! Esse é um aplicativo de informações geográficas!"
         android:textAlignment="center"
-        android:textColor="#225524"
+        android:textColor="?colorPrimary"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,23 +26,21 @@
 
     <ImageView
         android:id="@+id/logoImage"
-        android:layout_width="120dp"
-        android:layout_height="118dp"
-        android:layout_marginBottom="80dp"
+        android:layout_width="221dp"
+        android:layout_height="206dp"
+        android:layout_marginBottom="48dp"
         android:tintMode="multiply"
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@android:drawable/ic_dialog_map"
-        app:tint="#89D88C" />
+        app:srcCompat="@drawable/map" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/botaoAcessar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#1F4E21"
-        android:backgroundTint="#1F4E21"
+        android:background="?colorPrimaryVariant"
+        android:backgroundTint="?colorPrimaryVariant"
         android:backgroundTintMode="add"
         android:fontFamily="sans-serif-medium"
         android:paddingLeft="15sp"
@@ -51,7 +49,7 @@
         android:paddingBottom="10sp"
         android:text="Acessar"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textColor="#F5F5F5"
+        android:textColor="?colorOnSecondary"
         android:textColorHighlight="#B7B8B7"
         app:circularflow_defaultRadius="8sp"
         app:circularflow_radiusInDP="8sp"
